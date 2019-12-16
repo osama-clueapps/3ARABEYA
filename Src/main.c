@@ -53,10 +53,10 @@
 
 /* USER CODE BEGIN Includes */
 #define SPEED_SOUND 0.017
-#define CLEAR_PARAM 45
+#define CLEAR_PARAM 60
 #define SIDE_CLEAR_PARAM 90
 #define TURNANGLE 86
-#define ANGLE_TOLER 0
+#define ANGLE_TOLER 3
 #include "dwt_delay.h"
 #define FOR_RIGHT 0xC1
 #define FOR_LEFT 0xC9
@@ -69,7 +69,10 @@
 #define DIR_RIGHT 1
 #define DIR_LEFT 0
 #define EB3D_3N_WALL 40
-#define ANGLE_OFFSET 2
+#define ANGLE_OFFSET 20
+#define MIN_DIST2WALL 40
+#define RAMP1 55
+#define RAMP2 56
 
 /* USER CODE END Includes */
 
@@ -92,6 +95,7 @@ int sensortimef,sensortimer,sensortimel;
 char readyf,readyr,readyl;
 char readyAngle=0;
 int angle1,angle2,angle3,angle4,targetangle;
+int correction;
 
 unsigned long long seconds=0;
 unsigned long long milliseconds=0;
@@ -103,51 +107,92 @@ int readingsl[4];
 int readingf;
 int readingr;
 int readingl;
+
+char dir;
+int state = 0;
+float time = 0;
+int human = 0;
+//enum state {FWD_ALIGNED = 0, TURN, FWD_UNALIGNED, TURN180,UNTURN};
+enum status {INIT, FWD_ALIGNED, TURN, FWD_UNALIGNED, STOP};
+int comingtoTURNfrom, comingtoSTOPfrom;
+char parentState=1;
+char childState=0;
+int startOpen=0;
+
 int abs(int a) {
 	return a < 0? -a : a;
+}
+
+int min(float a, float b) {
+	return a < b ? a : b;
+}
+
+int max(float a, float b) {
+	return a > b ? a : b;
 }
 
 int diff_angle(int angle_a, int angle_b) {
 	int diff = angle_b - angle_a;
 	if (diff > 180) {
-		diff -= 180;
+		diff = 360-diff;
 		diff = -diff;
 	} else if (diff < -180) {
-		diff += 180;
+		diff = 360+diff;
 		diff = -diff;
 	}
 	return diff; // 0->180 or -180->0
 }
-
+int lastUpdatedSecond=-1;
+int possibleWallTime=-1;
 void goForward(int speed)
 {
+	
 	int speedr = speed;
 	int speedl=speed;
-	//HAL_Delay(delay);
-	int diff = diff_angle(angle, targetangle);
-	int adiff = abs(diff);
-	if(readingl<30||readingr<30)
+	if(state==FWD_ALIGNED&&(readingl<MIN_DIST2WALL||readingr<MIN_DIST2WALL))
 	{
-		if(readingl<30)
+		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
+		if(readingl<MIN_DIST2WALL&&readingr>MIN_DIST2WALL+5)
 		{
 			speedr=0;
-		}else
+		}else if(readingr<MIN_DIST2WALL&&readingl>MIN_DIST2WALL+5)
 		{
 			speedl=0;
 		}
-	}else{
-		if (adiff != 0 && adiff<45) {
-			if (diff < 0) {
-				speedl -= speed*(1-(abs(45-adiff)/45.0f));
-			} else {
-				speedr -= speed*(1-(abs(45-adiff)/45.0f));
-			}
-		}else if(adiff != 0)
+		if(lastUpdatedSecond==-1||seconds-lastUpdatedSecond>=1)
 		{
+			if(speedr==0)
+			{
+				lastUpdatedSecond=seconds;
+				angle1++;
+			}else if(speedl==0)
+			{
+				lastUpdatedSecond=seconds;
+				if(angle1==0)
+					angle1=359;
+				else
+					angle1--;
+			}
+			angle1=angle1%360;
+			angle2=(angle1+90)%360;
+			angle3=(angle2+90)%360;
+			angle4=(angle3+90)%360;
+		}
+	}else{
+		HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,1);
+		int diff = diff_angle(angle, targetangle);
+		int adiff = abs(diff);
+		if (adiff > ANGLE_TOLER && adiff <= 45) {
 			if (diff < 0) {
-				speedl =0;
+				speedl -= speed*((1-(0.05f+min(0.95f, abs(45-adiff)/45.0f))));
 			} else {
-				speedr =0;
+				speedr -= speed*((1-(0.05f+min(0.95f, abs(45-adiff)/45.0f))));
+			}
+		} else if (adiff > 45) {
+			if (diff < 0) {
+				speedl = 0;
+			} else {
+				speedr = 0;
 			}
 		}
 	}
@@ -200,14 +245,10 @@ void left(int speed)
 int getReading(int* readings)
 {
 	int avg=0;
-	int count = 0;
 	for(int i = 0;i<4;i++) {
 			avg+=readings[i];
-			count++;
 	}
-	if(count==0)
-		return -1;
-	return avg/count;
+	return avg/4;
 }
 void addReading(int* readings,int reading)
 {
@@ -592,17 +633,7 @@ int clear(int value){
 int clearmax(int value,int max){
 	return (value >= max);
 }
-char dir;
-int state = 0;
-float time = 0;
-//enum state {FWD_ALIGNED = 0, TURN, FWD_UNALIGNED, TURN180,UNTURN};
-enum status {INIT, FWD_ALIGNED, TURN, FWD_UNALIGNED, STOP};
-int comingtoTURNfrom, comingtoSTOPfrom;
-char parentState=1;
-#define RAMP1 55
-#define RAMP2 56
-char childState=0;
-int startOpen=0;
+int firstOpenSeconds=0;
 /* USER CODE END Header_MainMoveFunc */
 
 void MainMoveFunc(void const * argument)
@@ -630,22 +661,36 @@ void MainMoveFunc(void const * argument)
 						break;
 
 					case FWD_ALIGNED:
-						
 						targetangle = angle1;
 						if (clear(readingf)){
 							counterEN=1;
 							goForward(0x35);
-							if(readingl>1000)
+							if(abs(diff_angle(angle,targetangle))<=5&&readingl>1000)
 							{
-								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
-								state=STOP;
-							}else
-								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,1);							
+								//HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
+								if(firstOpenSeconds==0)
+									firstOpenSeconds=1;
+								else if(seconds-firstOpenSeconds>=30)
+									state=STOP;
+							}							
 						}
 						else{
 							counterEN=0;
 							stop();
-							osDelay(10);
+							if(human!=0)
+							{
+								taskENTER_CRITICAL();
+								uint8_t send[1]={1};
+								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
+								taskEXIT_CRITICAL();
+								osDelay(2000);
+								taskENTER_CRITICAL();
+								send[0]=0;
+								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
+								taskEXIT_CRITICAL();
+							}else
+								osDelay(100);
+							
 							if (clear(readingl) && readingl >= readingr){
 								targetangle = angle4;
 								state = TURN;
