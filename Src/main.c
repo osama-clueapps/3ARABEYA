@@ -56,7 +56,7 @@
 #define CLEAR_PARAM 45
 #define SIDE_CLEAR_PARAM 90
 #define TURNANGLE 86
-#define ANGLE_TOLER 0
+#define ANGLE_TOLER 2
 #include "dwt_delay.h"
 #define FOR_RIGHT 0xC1
 #define FOR_LEFT 0xC9
@@ -69,7 +69,8 @@
 #define DIR_RIGHT 1
 #define DIR_LEFT 0
 #define EB3D_3N_WALL 40
-#define ANGLE_OFFSET 2
+#define ANGLE_OFFSET 20
+#define MIN_DIST2WALL 40
 
 /* USER CODE END Includes */
 
@@ -92,6 +93,7 @@ int sensortimef,sensortimer,sensortimel;
 char readyf,readyr,readyl;
 char readyAngle=0;
 int angle1,angle2,angle3,angle4,targetangle;
+int correction;
 
 unsigned long long seconds=0;
 unsigned long long milliseconds=0;
@@ -107,13 +109,21 @@ int abs(int a) {
 	return a < 0? -a : a;
 }
 
+int min(float a, float b) {
+	return a < b ? a : b;
+}
+
+int max(float a, float b) {
+	return a > b ? a : b;
+}
+
 int diff_angle(int angle_a, int angle_b) {
 	int diff = angle_b - angle_a;
 	if (diff > 180) {
-		diff -= 180;
+		diff = 360-diff;
 		diff = -diff;
 	} else if (diff < -180) {
-		diff += 180;
+		diff = 360+diff;
 		diff = -diff;
 	}
 	return diff; // 0->180 or -180->0
@@ -123,36 +133,39 @@ void goForward(int speed)
 {
 	int speedr = speed;
 	int speedl=speed;
-	//HAL_Delay(delay);
-	int diff = diff_angle(angle, targetangle);
+	int danger = 0;
+	if (readingl < MIN_DIST2WALL && readingr > readingl+5) {
+		danger = ANGLE_OFFSET;
+	} else if (readingr < MIN_DIST2WALL && readingl > readingr+5) {
+		danger = -ANGLE_OFFSET;
+	}
+	int correctedangle = targetangle+danger+correction;
+	correctedangle = correctedangle < 0? correctedangle+360 : correctedangle;
+	int diff = diff_angle(angle, correctedangle);
 	int adiff = abs(diff);
-	if(readingl<30||readingr<30)
-	{
-		if(readingl<30)
-		{
-			speedr=0;
-		}else
-		{
-			speedl=0;
+	if (adiff > ANGLE_TOLER && adiff <= 45) {
+		if (diff < 0) {
+			speedl -= speed*((1-(0.05f+min(0.95f, abs(45-adiff)/45.0f))));
+		} else {
+			speedr -= speed*((1-(0.05f+min(0.95f, abs(45-adiff)/45.0f))));
 		}
-	}else{
-		if (adiff != 0 && adiff<45) {
-			if (diff < 0) {
-				speedl -= speed*(1-(abs(45-adiff)/45.0f));
-			} else {
-				speedr -= speed*(1-(abs(45-adiff)/45.0f));
-			}
-		}else if(adiff != 0)
-		{
-			if (diff < 0) {
-				speedl =0;
-			} else {
-				speedr =0;
-			}
+	} else if (adiff > 45) {
+		if (diff < 0) {
+			speedl = 0;
+		} else {
+			speedr = 0;
 		}
 	}
 	uint8_t forward[] = {ACCEL_RIGHT, speedr, ACCEL_LEFT,speedl};
 	HAL_UART_Transmit(&huart1, forward ,sizeof(forward), 1000);
+	if (danger) {
+		HAL_Delay(200);
+		if (readingl < MIN_DIST2WALL) {
+			correction = min(5, correction+1);
+		} else {
+			correction = max(-5, correction-1);
+		}
+	}
 }
 
 void stop()
@@ -595,6 +608,7 @@ int clearmax(int value,int max){
 char dir;
 int state = 0;
 float time = 0;
+int human = 0;
 //enum state {FWD_ALIGNED = 0, TURN, FWD_UNALIGNED, TURN180,UNTURN};
 enum status {INIT, FWD_ALIGNED, TURN, FWD_UNALIGNED, STOP};
 int comingtoTURNfrom, comingtoSTOPfrom;
@@ -630,12 +644,11 @@ void MainMoveFunc(void const * argument)
 						break;
 
 					case FWD_ALIGNED:
-						
 						targetangle = angle1;
 						if (clear(readingf)){
 							counterEN=1;
 							goForward(0x35);
-							if(readingl>1000)
+							if(0&&readingl>1000)
 							{
 								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
 								state=STOP;
@@ -645,7 +658,20 @@ void MainMoveFunc(void const * argument)
 						else{
 							counterEN=0;
 							stop();
-							osDelay(10);
+							if(human!=0)
+							{
+								taskENTER_CRITICAL();
+								uint8_t send[1]={1};
+								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
+								taskEXIT_CRITICAL();
+								osDelay(2000);
+								taskENTER_CRITICAL();
+								send[0]=0;
+								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
+								taskEXIT_CRITICAL();
+							}else
+								osDelay(100);
+							
 							if (clear(readingl) && readingl >= readingr){
 								targetangle = angle4;
 								state = TURN;
