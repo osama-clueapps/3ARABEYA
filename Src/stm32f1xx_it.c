@@ -46,8 +46,8 @@ int startl,endl;
 int startf,endf;
 extern int sensortimef,sensortimer,sensortimel,angle1,angle2,angle3,angle4;
 extern char readyf,readyr,readyl,readyAngle;
-char BTRead[4];
-extern long long seconds;
+uint8_t BTRead[4];
+extern unsigned long long seconds,milliseconds;
 extern char counterEN;
 /* USER CODE END 0 */
 
@@ -244,7 +244,9 @@ void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(counterEN==1)
-		seconds++;
+	{
+			seconds++;
+	}
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */

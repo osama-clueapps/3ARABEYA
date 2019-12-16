@@ -3,7 +3,7 @@
 <title>Static Call Graph - [Lab7Ex\Lab7Ex.axf]</title></head>
 <body><HR>
 <H1>Static Call Graph for image Lab7Ex\Lab7Ex.axf</H1><HR>
-<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Wed Dec 11 16:48:37 2019
+<BR><P>#&#060CALLGRAPH&#062# ARM Linker, 5060750: Last Updated: Sun Dec 15 17:05:05 2019
 <BR><P>
 <H3>Maximum Stack Usage =        232 bytes + Unknown(Cycles, Untraceable Function Pointers)</H3><H3>
 Call chain for Maximum Stack Depth:</H3>
@@ -274,7 +274,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[45]"></a>__aeabi_frsub</STRONG> (Thumb, 6 bytes, Stack size 0 bytes, fadd.o(.text))
@@ -282,13 +282,13 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[41]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_fadd
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[97]"></a>__aeabi_fmul</STRONG> (Thumb, 100 bytes, Stack size 8 bytes, fmul.o(.text))
 <BR><BR>[Stack]<UL><LI>Max Depth = 8<LI>Call Chain = __aeabi_fmul
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[46]"></a>__aeabi_fdiv</STRONG> (Thumb, 124 bytes, Stack size 8 bytes, fdiv.o(.text))
@@ -296,7 +296,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[43]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_round
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[47]"></a>__aeabi_dmul</STRONG> (Thumb, 228 bytes, Stack size 48 bytes, dmul.o(.text))
@@ -312,7 +312,7 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[42]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;_float_epilogue
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[4a]"></a>__aeabi_i2d</STRONG> (Thumb, 34 bytes, Stack size 16 bytes, dflti.o(.text))
@@ -324,7 +324,7 @@ Global Symbols
 </UL>
 
 <P><STRONG><a name="[98]"></a>__aeabi_f2iz</STRONG> (Thumb, 50 bytes, Stack size 0 bytes, ffixi.o(.text))
-<BR><BR>[Called By]<UL><LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR><BR>[Called By]<UL><LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[4b]"></a>__aeabi_d2uiz</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, dfixui.o(.text))
@@ -467,6 +467,7 @@ Global Symbols
 
 <P><STRONG><a name="[83]"></a>HAL_GPIO_WritePin</STRONG> (Thumb, 10 bytes, Stack size 0 bytes, stm32f1xx_hal_gpio.o(i.HAL_GPIO_WritePin))
 <BR><BR>[Called By]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadDist
+<LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MainMoveFunc
 <LI><a href="#[82]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MX_GPIO_Init
 </UL>
 
@@ -737,9 +738,9 @@ Global Symbols
 <LI><a href="#[80]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Called By]<UL><LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop
-<LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
-<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
-<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
+<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[7a]"></a>HAL_UART_TxCpltCallback</STRONG> (Thumb, 2 bytes, Stack size 0 bytes, stm32f1xx_hal_uart.o(i.HAL_UART_TxCpltCallback))
@@ -753,16 +754,17 @@ Global Symbols
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> startup_stm32f103xb.o(RESET)
 </UL>
-<P><STRONG><a name="[3d]"></a>MainMoveFunc</STRONG> (Thumb, 688 bytes, Stack size 0 bytes, main.o(i.MainMoveFunc))
+<P><STRONG><a name="[3d]"></a>MainMoveFunc</STRONG> (Thumb, 812 bytes, Stack size 0 bytes, main.o(i.MainMoveFunc))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = MainMoveFunc &rArr; goForward &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[86]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;osDelay
+<LI><a href="#[83]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_GPIO_WritePin
 <LI><a href="#[87]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;stop
-<LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
-<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
-<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
-<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clearmax
-<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clear
+<LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
+<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clearmax
+<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;clear
 </UL>
 <BR>[Address Reference Count : 1]<UL><LI> main.o(.constdata)
 </UL>
@@ -869,18 +871,18 @@ Global Symbols
 <BR><BR>[Called By]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadDist
 </UL>
 
-<P><STRONG><a name="[88]"></a>clear</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, main.o(i.clear))
+<P><STRONG><a name="[8b]"></a>clear</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, main.o(i.clear))
 <BR><BR>[Called By]<UL><LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MainMoveFunc
 </UL>
 
-<P><STRONG><a name="[89]"></a>clearmax</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, main.o(i.clearmax))
+<P><STRONG><a name="[8c]"></a>clearmax</STRONG> (Thumb, 12 bytes, Stack size 0 bytes, main.o(i.clearmax))
 <BR><BR>[Called By]<UL><LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MainMoveFunc
 </UL>
 
 <P><STRONG><a name="[96]"></a>diff_angle</STRONG> (Thumb, 22 bytes, Stack size 0 bytes, main.o(i.diff_angle))
-<BR><BR>[Called By]<UL><LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
-<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
-<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
+<BR><BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
+<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
+<LI><a href="#[88]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;goForward
 </UL>
 
 <P><STRONG><a name="[8f]"></a>getReading</STRONG> (Thumb, 36 bytes, Stack size 8 bytes, main.o(i.getReading))
@@ -889,7 +891,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;ReadDist
 </UL>
 
-<P><STRONG><a name="[8a]"></a>goForward</STRONG> (Thumb, 174 bytes, Stack size 24 bytes, main.o(i.goForward))
+<P><STRONG><a name="[88]"></a>goForward</STRONG> (Thumb, 202 bytes, Stack size 24 bytes, main.o(i.goForward))
 <BR><BR>[Stack]<UL><LI>Max Depth = 80<LI>Call Chain = goForward &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[49]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;__aeabi_i2f
@@ -904,7 +906,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MainMoveFunc
 </UL>
 
-<P><STRONG><a name="[8b]"></a>left</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, main.o(i.left))
+<P><STRONG><a name="[8a]"></a>left</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, main.o(i.left))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = left &rArr; stop &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -985,7 +987,7 @@ Global Symbols
 <BR>[Called By]<UL><LI><a href="#[b0]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;prvInitialiseNewTask
 </UL>
 
-<P><STRONG><a name="[8c]"></a>right</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, main.o(i.right))
+<P><STRONG><a name="[89]"></a>right</STRONG> (Thumb, 50 bytes, Stack size 8 bytes, main.o(i.right))
 <BR><BR>[Stack]<UL><LI>Max Depth = 72<LI>Call Chain = right &rArr; stop &rArr; HAL_UART_Transmit &rArr; UART_WaitOnFlagUntilTimeout
 </UL>
 <BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
@@ -1000,9 +1002,9 @@ Global Symbols
 </UL>
 <BR>[Calls]<UL><LI><a href="#[81]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;HAL_UART_Transmit
 </UL>
-<BR>[Called By]<UL><LI><a href="#[8c]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
+<BR>[Called By]<UL><LI><a href="#[89]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;right
 <LI><a href="#[35]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;main
-<LI><a href="#[8b]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
+<LI><a href="#[8a]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;left
 <LI><a href="#[3d]">&gt;&gt;</a>&nbsp;&nbsp;&nbsp;MainMoveFunc
 </UL>
 

@@ -53,7 +53,7 @@
 
 /* USER CODE BEGIN Includes */
 #define SPEED_SOUND 0.017
-#define CLEAR_PARAM 60
+#define CLEAR_PARAM 45
 #define SIDE_CLEAR_PARAM 90
 #define TURNANGLE 86
 #define ANGLE_TOLER 0
@@ -93,10 +93,16 @@ char readyf,readyr,readyl;
 char readyAngle=0;
 int angle1,angle2,angle3,angle4,targetangle;
 
-long long seconds=0;
+unsigned long long seconds=0;
+unsigned long long milliseconds=0;
 char counterEN=0;
 int clear(int value);
-
+int readingsf[4];
+int readingsr[4];
+int readingsl[4];
+int readingf;
+int readingr;
+int readingl;
 int abs(int a) {
 	return a < 0? -a : a;
 }
@@ -120,14 +126,32 @@ void goForward(int speed)
 	//HAL_Delay(delay);
 	int diff = diff_angle(angle, targetangle);
 	int adiff = abs(diff);
-	if (adiff != 0 ) {
-		if (diff > 0) {
-			speedl -= speed*(1-(abs(45-adiff)/45.0f));
-		} else {
-			speedr -= speed*(1-(abs(45-adiff)/45.0f));
+	if(readingl<30||readingr<30)
+	{
+		if(readingl<30)
+		{
+			speedr=0;
+		}else
+		{
+			speedl=0;
+		}
+	}else{
+		if (adiff != 0 && adiff<45) {
+			if (diff < 0) {
+				speedl -= speed*(1-(abs(45-adiff)/45.0f));
+			} else {
+				speedr -= speed*(1-(abs(45-adiff)/45.0f));
+			}
+		}else if(adiff != 0)
+		{
+			if (diff < 0) {
+				speedl =0;
+			} else {
+				speedr =0;
+			}
 		}
 	}
-	uint8_t forward[] = {ACCEL_RIGHT, speedl, ACCEL_LEFT,speedr};
+	uint8_t forward[] = {ACCEL_RIGHT, speedr, ACCEL_LEFT,speedl};
 	HAL_UART_Transmit(&huart1, forward ,sizeof(forward), 1000);
 }
 
@@ -172,12 +196,7 @@ void left(int speed)
 	//HAL_Delay(delay);
 }
 
-int readingsf[4];
-int readingsr[4];
-int readingsl[4];
-int readingf;
-int readingr;
-int readingl;
+
 int getReading(int* readings)
 {
 	int avg=0;
@@ -579,11 +598,13 @@ float time = 0;
 //enum state {FWD_ALIGNED = 0, TURN, FWD_UNALIGNED, TURN180,UNTURN};
 enum status {INIT, FWD_ALIGNED, TURN, FWD_UNALIGNED, STOP};
 int comingtoTURNfrom, comingtoSTOPfrom;
-/* USER CODE END Header_MainMoveFunc */
-char parentState=2;
+char parentState=1;
 #define RAMP1 55
 #define RAMP2 56
 char childState=0;
+int startOpen=0;
+/* USER CODE END Header_MainMoveFunc */
+
 void MainMoveFunc(void const * argument)
 {
   /* USER CODE BEGIN MainMoveFunc */
@@ -592,6 +613,7 @@ void MainMoveFunc(void const * argument)
 	while (readyAngle==0)	{
 		osDelay(100);
 	}
+	parentState=1;
 	targetangle = angle1;
   for(;;)
   {
@@ -612,10 +634,13 @@ void MainMoveFunc(void const * argument)
 						targetangle = angle1;
 						if (clear(readingf)){
 							counterEN=1;
-							if(seconds>=1000000)
+							goForward(0x35);
+							if(readingl>1000)
+							{
+								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
 								state=STOP;
-							else
-								goForward(0x35);
+							}else
+								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,1);							
 						}
 						else{
 							counterEN=0;
@@ -695,8 +720,23 @@ void MainMoveFunc(void const * argument)
 						break;
 
 					case STOP:
+						
 						counterEN=0;
+						targetangle=angle1;
+						if (clear(readingf)){
+								goForward(0x35);
+								osDelay(1000);
+							}
 						stop();
+						targetangle = angle4;
+						left(0x20);
+						parentState=2;
+				    state=INIT;
+						int temp=angle2;
+						angle2 = angle1;
+						angle1 = angle4;
+						angle4 = angle3;
+						angle3 = temp;
 						break;
 				}
 			}
@@ -706,10 +746,7 @@ void MainMoveFunc(void const * argument)
 				switch(state)
 				{
 					case INIT:
-						angle1=angle;
-						angle2=(angle1+90)%360;
-						angle3=(angle2+90)%360;
-						angle4=(angle3+90)%360;
+						
 						targetangle=angle1;
 						state=FWD_ALIGNED;
 						seconds=0;
@@ -717,7 +754,7 @@ void MainMoveFunc(void const * argument)
 						break;
 					case FWD_ALIGNED:
 						targetangle = angle1;
-						if(childState==RAMP1&&seconds>=7)
+						if(childState==RAMP1&&seconds>=10)
 						{
 							if(angle1>=45)
 								angle1-=45;
@@ -727,9 +764,7 @@ void MainMoveFunc(void const * argument)
 							angle2=(angle1+90)%360;
 							angle3=(angle2+90)%360;
 							angle4=(angle3+90)%360;
-							state=TURN;
-							dir=DIR_LEFT;
-							comingtoTURNfrom = FWD_UNALIGNED;
+							
 							childState=RAMP2;
 							counterEN=0;
 							seconds=0;
@@ -738,8 +773,20 @@ void MainMoveFunc(void const * argument)
 							if(childState==RAMP1)
 								counterEN=1;
 							goForward(0x35);
+							if(childState==RAMP2){
+								counterEN=1;
+								if(seconds>=5){
+									if(readingl>3000)
+									{
+										HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
+										//state=STOP;
+									}else
+										HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,1);
+								}
+							}
 						}
 						else{
+							counterEN=0;
 							stop();
 							osDelay(10);
 							if (clear(readingl) && readingl >= readingr){
@@ -778,7 +825,7 @@ void MainMoveFunc(void const * argument)
 							if (clear(readingf) && !clearmax(readingr, SIDE_CLEAR_PARAM)){
 								goForward(0x35);
 							}
-							else if (clearmax(readingr, SIDE_CLEAR_PARAM)){
+							else if (1){
 								if (clear(readingf)){
 									goForward(0x35);
 									osDelay(1000);
@@ -797,10 +844,6 @@ void MainMoveFunc(void const * argument)
 								goForward(0x35);
 							}
 							else if (clearmax(readingl, SIDE_CLEAR_PARAM)){
-								if (clear(readingf)){
-									goForward(0x35);
-									osDelay(1000);
-								}
 								targetangle = angle1;
 								comingtoTURNfrom = FWD_UNALIGNED;
 								dir=DIR_LEFT;
@@ -814,16 +857,49 @@ void MainMoveFunc(void const * argument)
 								angle3 = temp1;
 								angle4 = temp2;
 								targetangle=angle1;
+								dir = DIR_RIGHT;
 								state=TURN;
 								childState=RAMP1;
 								comingtoTURNfrom = FWD_UNALIGNED;
+							}else
+							{
+								targetangle = angle1;
+								comingtoTURNfrom = FWD_UNALIGNED;
+								dir=DIR_LEFT;
+								state = TURN;
 							}
+//								else if (clearmax(readingl, SIDE_CLEAR_PARAM)){
+//								if (clear(readingf)){
+//									goForward(0x35);
+//									osDelay(1000);
+//								}
+//								targetangle = angle1;
+//								comingtoTURNfrom = FWD_UNALIGNED;
+//								dir=DIR_LEFT;
+//								state = TURN;
+//							}
+							
 						}
 						break;
 
 					case STOP:
 						counterEN=0;
+						seconds=0;
+						targetangle=angle1;
+						if (clear(readingf)){
+								goForward(0x35);
+								osDelay(1000);
+							}
 						stop();
+						targetangle = angle4;
+						left(0x20);
+						parentState=1;
+				    state=INIT;
+						int temp=angle2;
+						angle2 = angle1;
+						angle1 = angle4;
+						angle4 = angle3;
+						angle3 = temp;
 						break;
 				}
 			}
