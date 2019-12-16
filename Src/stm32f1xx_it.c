@@ -46,9 +46,10 @@ int startl,endl;
 int startf,endf;
 extern int sensortimef,sensortimer,sensortimel,angle1,angle2,angle3,angle4;
 extern char readyf,readyr,readyl,readyAngle;
-char BTRead[4];
-extern long long seconds;
+uint8_t BTRead[5];
+extern unsigned long long seconds,milliseconds;
 extern char counterEN;
+extern int human;
 /* USER CODE END 0 */
 
 /* External variables --------------------------------------------------------*/
@@ -244,7 +245,9 @@ void TIM3_IRQHandler(void)
 {
   /* USER CODE BEGIN TIM3_IRQn 0 */
 	if(counterEN==1)
-		seconds++;
+	{
+			seconds++;
+	}
   /* USER CODE END TIM3_IRQn 0 */
   HAL_TIM_IRQHandler(&htim3);
   /* USER CODE BEGIN TIM3_IRQn 1 */
@@ -263,9 +266,11 @@ void USART2_IRQHandler(void)
 	BTRead[0] = BTRead[1];
 	BTRead[1] = BTRead[2];
 	BTRead[2] = BTRead[3];
-	BTRead[3]=read[0];
-	if((BTRead[0] == 0xFF) && (BTRead[3] == 0xFF)){
+	BTRead[3] = BTRead[4];
+	BTRead[4] = read[0];
+	if(BTRead[0] == 0xFF&&BTRead[4] == 0xFF){
 		angle=(BTRead[2]<<8)|BTRead[1];
+		human=BTRead[3];
 		if(readyAngle==0)
 		{
 			angle1=angle;
@@ -284,10 +289,17 @@ void USART2_IRQHandler(void)
 //		angle4=(angle3+90)%360;
 //	}
 //	readyAngle=1;
+	
+	///////////////////////
+	
+	/////////////////////
+	
   /* USER CODE END USART2_IRQn 0 */
   HAL_UART_IRQHandler(&huart2);
   /* USER CODE BEGIN USART2_IRQn 1 */
-
+//		uint8_t send[1];
+//		send[0] = obstacle;
+//		HAL_UART_Transmit(&huart2,send,sizeof(send),300);
   /* USER CODE END USART2_IRQn 1 */
 }
 
