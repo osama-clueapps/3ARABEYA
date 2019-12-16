@@ -43,6 +43,7 @@ int facecount, human;
 String info = "";
 
 ArrayList<String> devicesDiscovered = new ArrayList();
+String UIText = "";
 String deviceName = "AT+NAME";
 
 //********************************************************************
@@ -125,14 +126,17 @@ void draw() {
           
         if (facecount > 1 && cooldown <= 0) {
           human = 1;
-          if (obstacle) {
+        }
+        if (obstacle && cooldown <= 0) {
             greet();
-            cooldown = 2;
-          }
+            cooldown = 1;
         }
       }
     } 
     drawUI();
+  }
+  if (cooldown == 0) {
+        human = 0;
   }
   if (frameCount % 30 == 0) {
       if (!isConnected()) {
@@ -141,9 +145,8 @@ void draw() {
       checkEnableCamera();
       if (cooldown > 0) {
         cooldown--;
-      } else {
-        human = 0;
-      }
+      } 
+      
   }
 }
 
@@ -168,17 +171,17 @@ void drawUI(){
     
   }
   
-  translate(width/2, height/2);
+  UIText = "";
   if (isConnected()) {
-    text("Connected\n", 0, 0, width/2, height/2);
+    UIText += "Connected\n";
   } else {
-      text("Disconnected\n" , 0, 0, width/2, height/2);
+    UIText += "Disconnected\n";
   }
-
-  text("Processed Rot: \n" +
-      "rotx: " + nfp(rotx, 1, 3) + "\n" + 
-      "sent to uC" + nfp(int(rotx) & 255,1,3)+" "+nfp((int(rotx) & 65280)>> 8,1,3)+"\n"
-      , 0, 0, width, height);
+  UIText += "Human: " + human + "\n"+ 
+            "Rot: " + nfp(rotx, 1, 3) + "\n" + 
+            "sent to uC" + nfp(int(rotx) & 255,1,3)+" "+nfp((int(rotx) & 65280)>> 8,1,3)+"\n";
+      
+  text(UIText, width/2, height/2);
 
 }
 
