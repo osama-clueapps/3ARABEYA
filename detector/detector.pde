@@ -1,5 +1,6 @@
 import java.util.Locale;
 import java.lang.Math;
+import java.util.Random; 
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,6 +21,10 @@ import ketai.cv.facedetector.*;
 import ketai.net.KetaiOSCMessage;
 
 import oscP5.*;
+
+import cassette.audiofiles.SoundFile;
+SoundFile music;
+
 
 Context context;
 KetaiCamera cam;
@@ -45,6 +50,23 @@ String info = "";
 ArrayList<String> devicesDiscovered = new ArrayList();
 String UIText = "";
 String deviceName = "AT+NAME";
+
+String[] Jokes = {"How many programmers does it take to change a light bulb? None, that is a hardware problem.",
+                  "Chuck Norris makes onions cry.",
+                  "Chuck Norris narrates Morgan Freeman's life.",
+                  "Two guys walk into a bar. The third one ducks.",
+                  "Let me tell you a joke... My life.",
+                  "I used to be indecisive. Now I am not sure.",
+                  "What is it called when a robot eats a sandwich in one chomp? A megabyte.",
+                  "A Robot gets arrested. He's charged with battery.",
+                  "What is a robots favourite food? Computer chips",
+                  "Why don't robots have brothers? Because they all have trans-sisters.",
+                  "It's kind of patronising that a computer asks you to prove you're not a robot...",
+                  "What do you call a human that discriminates against robots? A biologist",
+                  "The difference between stupidity and genius is that genius has its limits. – Albert Einstein"
+                  };
+                  
+
 
 //********************************************************************
 // The following code is required to enable bluetooth at startup.
@@ -79,16 +101,20 @@ void setup() {
   listener = new RotationListener();
   manager.registerListener(listener, sensor, SensorManager.SENSOR_DELAY_GAME);
 
+  thread("music");
+
   
   orientation(LANDSCAPE);
   println(cam.list());
-  cam.setCameraID(0); //front camera
+  cam.setCameraID(0);  //front camera
   imageMode(CENTER);
   stroke(255);
   noFill();
   textSize(48);
   smooth();
 }
+
+
 
 void draw() {
   background(128);
@@ -129,25 +155,30 @@ void draw() {
         }
         if (obstacle && cooldown <= 0) {
             greet();
-            cooldown = 1;
+            cooldown = 3;
         }
       }
-    } 
+    }
     drawUI();
   }
-  if (cooldown == 0) {
-        human = 0;
-  }
-  if (frameCount % 30 == 0) {
+
+  if (frameCount % 20 == 0) {
       if (!isConnected()) {
          bt.connectToDeviceByName(deviceName);
       }
       checkEnableCamera();
       if (cooldown > 0) {
         cooldown--;
-      } 
-      
+      }   
+      if (cooldown == 0) {
+        human = 0;
+      }
   }
+}
+
+void music() {
+  music = new SoundFile(this, "mario.wav");
+  //music.play();
 }
 
 void drawUI(){
@@ -207,7 +238,8 @@ void onBluetoothDataEvent(String who, byte[] data)
 
 void greet() {
   //Toggle Camera on/off
-  String toSpeak = new String("Hello");
+  Random rand = new Random(); 
+  String toSpeak = new String(Jokes[rand.nextInt(Jokes.length)]);
   t1.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
 }
 
