@@ -671,7 +671,7 @@ void MainMoveFunc(void const * argument)
 						if (clear(readingf)){
 							counterEN=1;
 							goForward(0x35);
-							if(parentState==1&&seconds>=60&&abs(diff_angle(angle,targetangle))<=5&&readingl>1000)
+							if(parentState==1&&seconds>=5&&abs(diff_angle(angle,targetangle))<=5&&readingl>1000)
 							{
 								HAL_GPIO_WritePin(LED_GPIO_Port,LED_Pin,0);
 								if(firstOpenSeconds==0)
@@ -692,7 +692,9 @@ void MainMoveFunc(void const * argument)
 								uint8_t send[1]={1};
 								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
 								taskEXIT_CRITICAL();
-								osDelay(1000);
+								while(human) {
+									osDelay(100);
+								}
 								taskENTER_CRITICAL();
 								send[0]=0;
 								HAL_UART_Transmit(&huart2,send,sizeof(send),300);
