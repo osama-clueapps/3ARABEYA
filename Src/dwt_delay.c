@@ -22,7 +22,7 @@
 
 #include "stm32f1xx_hal.h"          // change to whatever MCU you use
 #include "dwt_delay.h"
-
+//Adding a new comment
 /**
  * Initialization routine.
  * You might need to enable access to DWT registers on Cortex-M7
